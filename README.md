@@ -120,7 +120,7 @@ Update these after deployment:
 | Deliverable | URL |
 |-------------|-----|
 | GitHub Repository | `https://github.com/saharshbajpai/Inventory-management-system` |
-| Docker Hub (backend image) | `https://hub.docker.com/r/saharshbajpai/inventory-backend` |
+| Docker Hub (backend image) | `https://hub.docker.com/r/latkan/inventory-backend` |
 | Live Frontend (Vercel) | `https://inventory-management-system-vert-mu-55.vercel.app` |
 | Live Backend API (Render) | `https://inventory-backend-cbag.onrender.com` |
 
