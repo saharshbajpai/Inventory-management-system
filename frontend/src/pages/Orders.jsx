@@ -15,9 +15,12 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import './Orders.css';
 
 const Orders = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -444,7 +447,7 @@ const Orders = () => {
           </div>
         ) : (
           <div className="table-container">
-            <table className="custom-table">
+            <table className="custom-table responsive-table">
               <thead>
                 <tr>
                   <th>Order ID</th>
@@ -458,29 +461,29 @@ const Orders = () => {
               <tbody>
                 {filteredOrders.map((order) => (
                   <tr key={order.id} className="clickable-row" onClick={() => navigate(`/orders/${order.id}`)}>
-                    <td>
+                    <td data-label="Order ID">
                       <div className="flex-center font-bold" style={{ gap: '0.4rem' }}>
                         <FileText size={14} className="text-muted" />
                         <span className="order-id-trunc" title={order.id}>{order.id.slice(0, 8)}...</span>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Customer Account">
                       <div className="font-semibold">{order.customer?.full_name || 'Deleted Customer'}</div>
                       <div className="text-muted text-xs">{order.customer?.email}</div>
                     </td>
-                    <td>
+                    <td data-label="Order Date">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <Calendar size={14} className="text-muted" />
                         <span>{new Date(order.created_at).toLocaleDateString()}</span>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Total Amount">
                       <span className="font-bold text-success">{formatCurrency(order.total_amount)}</span>
                     </td>
-                    <td>
+                    <td data-label="Status">
                       <span className="badge badge-success">{order.status}</span>
                     </td>
-                    <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                    <td data-label="Actions" style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                       <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
                         <button 
                           className="btn btn-secondary btn-xs-icon"
@@ -490,13 +493,15 @@ const Orders = () => {
                           <span>Details</span>
                           <ChevronRight size={14} />
                         </button>
-                        <button 
-                          className="btn btn-danger btn-xs-icon"
-                          onClick={(e) => handleDeleteOrder(order.id, e)}
-                          title="Cancel Order"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {isAdmin && (
+                          <button 
+                            className="btn btn-danger btn-xs-icon"
+                            onClick={(e) => handleDeleteOrder(order.id, e)}
+                            title="Cancel Order"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -12,16 +12,26 @@ from app.core.exceptions import (
     ProductNotFoundException,
     OrderNotFoundException,
 )
+from app.api.dependencies import get_current_user, RoleChecker
+
+admin_required = RoleChecker(["Admin"])
 
 router = APIRouter()
 
 @router.get("", response_model=List[OrderResponse])
-def get_orders(db: Session = Depends(get_db)):
+def get_orders(
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
     # Order by newest first
     return db.query(Order).order_by(Order.created_at.desc()).all()
 
 @router.get("/{id}", response_model=OrderResponse)
-def get_order(id: UUID, db: Session = Depends(get_db)):
+def get_order(
+    id: UUID, 
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
     order = db.query(Order).filter(Order.id == id).first()
     if not order:
         raise HTTPException(
@@ -31,7 +41,11 @@ def get_order(id: UUID, db: Session = Depends(get_db)):
     return order
 
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
+def create_order(
+    order_in: OrderCreate, 
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
     try:
         return order_service.create_order(db, order_in)
     except CustomerNotFoundException as e:
@@ -65,7 +79,11 @@ def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
         )
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_order_endpoint(id: UUID, db: Session = Depends(get_db)):
+def delete_order_endpoint(
+    id: UUID, 
+    db: Session = Depends(get_db),
+    current_user = Depends(admin_required)
+):
     try:
         order_service.delete_order(db, id)
     except OrderNotFoundException as e:

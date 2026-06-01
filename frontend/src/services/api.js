@@ -10,11 +10,38 @@ const api = axios.create({
   },
 });
 
-// Error response interceptor to extract cleaner backend messages
+// Request interceptor to attach JWT token dynamically
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor to handle cleaner backend messages and 401 Unauthorized
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If backend returns structured error payload, let's return it as the error object
+    // Check if token has expired or is invalid
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      delete api.defaults.headers.common['Authorization'];
+
+      // Redirect to login if not already there
+      const path = window.location.pathname;
+      if (path !== '/login' && path !== '/signup') {
+        window.location.href = '/login?session_expired=true';
+      }
+    }
+
+    // Return structured backend error payload if present
     if (error.response && error.response.data) {
       return Promise.reject(error.response.data);
     }

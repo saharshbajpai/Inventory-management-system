@@ -11,8 +11,11 @@ import {
 import api from '../services/api';
 import Modal from '../components/UI/Modal';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const Products = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   const location = useLocation();
   const { showToast } = useToast();
   const [products, setProducts] = useState([]);
@@ -187,10 +190,12 @@ const Products = () => {
           <h1>Product Catalog</h1>
           <p>Create, update, and manage your inventory stock items.</p>
         </div>
-        <button className="btn btn-primary" onClick={handleOpenCreateModal}>
-          <Plus size={18} />
-          <span>Add Product</span>
-        </button>
+        {isAdmin && (
+          <button className="btn btn-primary" onClick={handleOpenCreateModal}>
+            <Plus size={18} />
+            <span>Add Product</span>
+          </button>
+        )}
       </div>
 
       {/* Filter and search block */}
@@ -227,14 +232,14 @@ const Products = () => {
           </div>
         ) : (
           <div className="table-container">
-            <table className="custom-table">
+            <table className="custom-table responsive-table">
               <thead>
                 <tr>
                   <th>Product Details</th>
                   <th>SKU</th>
                   <th>Unit Price</th>
                   <th>Stock Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -244,7 +249,7 @@ const Products = () => {
 
                   return (
                     <tr key={product.id}>
-                      <td>
+                      <td data-label="Product Details">
                         <div className="font-semibold">{product.name}</div>
                         {product.description && (
                           <div className="text-muted text-xs text-truncate" style={{ maxWidth: '280px' }}>
@@ -252,11 +257,11 @@ const Products = () => {
                           </div>
                         )}
                       </td>
-                      <td>
+                      <td data-label="SKU">
                         <code className="sku-code">{product.sku}</code>
                       </td>
-                      <td className="font-semibold">{formatCurrency(product.price)}</td>
-                      <td>
+                      <td data-label="Unit Price" className="font-semibold">{formatCurrency(product.price)}</td>
+                      <td data-label="Stock Status">
                         {isOutOfStock ? (
                           <span className="badge badge-danger">Out of Stock</span>
                         ) : isLowStock ? (
@@ -265,24 +270,26 @@ const Products = () => {
                           <span className="badge badge-success">Healthy ({product.stock_quantity})</span>
                         )}
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                          <button 
-                            className="btn btn-secondary btn-xs-icon"
-                            onClick={() => handleOpenEditModal(product)}
-                            title="Edit Product"
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                          <button 
-                            className="btn btn-danger btn-xs-icon"
-                            onClick={() => handleDeleteProduct(product.id, product.name)}
-                            title="Delete Product"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
+                      {isAdmin && (
+                        <td data-label="Actions" style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                            <button 
+                              className="btn btn-secondary btn-xs-icon"
+                              onClick={() => handleOpenEditModal(product)}
+                              title="Edit Product"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button 
+                              className="btn btn-danger btn-xs-icon"
+                              onClick={() => handleDeleteProduct(product.id, product.name)}
+                              title="Delete Product"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

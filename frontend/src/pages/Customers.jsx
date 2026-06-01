@@ -12,8 +12,11 @@ import {
 import api from '../services/api';
 import Modal from '../components/UI/Modal';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const Customers = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   const { showToast } = useToast();
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
@@ -173,10 +176,12 @@ const Customers = () => {
           <h1>Customer Directory</h1>
           <p>Register new accounts, update contact information, and review details.</p>
         </div>
-        <button className="btn btn-primary" onClick={handleOpenCreateModal}>
-          <Plus size={18} />
-          <span>Add Customer</span>
-        </button>
+        {isAdmin && (
+          <button className="btn btn-primary" onClick={handleOpenCreateModal}>
+            <Plus size={18} />
+            <span>Add Customer</span>
+          </button>
+        )}
       </div>
 
       {/* Filter and search block */}
@@ -213,67 +218,69 @@ const Customers = () => {
           </div>
         ) : (
           <div className="table-container">
-            <table className="custom-table">
+            <table className="custom-table responsive-table">
               <thead>
                 <tr>
                   <th>Customer Name</th>
                   <th>Email Address</th>
                   <th>Phone Number</th>
                   <th>Shipping Address</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
                 </tr>
               </thead>
               <tbody>
                 {filteredCustomers.map((customer) => (
-                  <tr key={customer.id}>
-                    <td>
-                      <div className="font-semibold">{customer.full_name}</div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Mail size={14} className="text-muted" />
-                        <span>{customer.email}</span>
-                      </div>
-                    </td>
-                    <td>
-                      {customer.phone ? (
+                    <tr key={customer.id}>
+                      <td data-label="Customer Name">
+                        <div className="font-semibold">{customer.full_name}</div>
+                      </td>
+                      <td data-label="Email Address">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <Phone size={14} className="text-muted" />
-                          <span>{customer.phone}</span>
+                          <Mail size={14} className="text-muted" />
+                          <span>{customer.email}</span>
                         </div>
-                      ) : (
-                        <span className="text-muted text-xs">—</span>
+                      </td>
+                      <td data-label="Phone Number">
+                        {customer.phone ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <Phone size={14} className="text-muted" />
+                            <span>{customer.phone}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted text-xs">—</span>
+                        )}
+                      </td>
+                      <td data-label="Shipping Address">
+                        {customer.address ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', maxWidth: '300px' }}>
+                            <MapPin size={14} className="text-muted" style={{ flexShrink: 0 }} />
+                            <span className="text-truncate">{customer.address}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted text-xs">—</span>
+                        )}
+                      </td>
+                      {isAdmin && (
+                        <td data-label="Actions" style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                            <button 
+                              className="btn btn-secondary btn-xs-icon"
+                              onClick={() => handleOpenEditModal(customer)}
+                              title="Edit Customer"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button 
+                              className="btn btn-danger btn-xs-icon"
+                              onClick={() => handleDeleteCustomer(customer.id, customer.full_name)}
+                              title="Delete Customer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
                       )}
-                    </td>
-                    <td>
-                      {customer.address ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', maxWidth: '300px' }}>
-                          <MapPin size={14} className="text-muted" style={{ flexShrink: 0 }} />
-                          <span className="text-truncate">{customer.address}</span>
-                        </div>
-                      ) : (
-                        <span className="text-muted text-xs">—</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                        <button 
-                          className="btn btn-secondary btn-xs-icon"
-                          onClick={() => handleOpenEditModal(customer)}
-                          title="Edit Customer"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button 
-                          className="btn btn-danger btn-xs-icon"
-                          onClick={() => handleDeleteCustomer(customer.id, customer.full_name)}
-                          title="Delete Customer"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    </tr>
                 ))}
               </tbody>
             </table>

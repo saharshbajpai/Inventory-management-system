@@ -174,7 +174,7 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="table-container">
-              <table className="custom-table compact-table">
+              <table className="custom-table compact-table responsive-table">
                 <thead>
                   <tr>
                     <th>Customer</th>
@@ -187,19 +187,19 @@ const Dashboard = () => {
                 <tbody>
                   {recentOrders.map((order) => (
                     <tr key={order.id} className="clickable-row" onClick={() => navigate(`/orders/${order.id}`)}>
-                      <td>
+                      <td data-label="Customer">
                         <div className="font-semibold">{order.customer?.full_name || 'Unknown'}</div>
                         <div className="text-muted text-xs">{order.customer?.email}</div>
                       </td>
-                      <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                      <td>
+                      <td data-label="Date">{new Date(order.created_at).toLocaleDateString()}</td>
+                      <td data-label="Items">
                         {order.items?.reduce((acc, item) => acc + item.quantity, 0) || 0} units
                       </td>
-                      <td className="font-bold text-success">
+                      <td data-label="Total" className="font-bold text-success">
                         {formatCurrency(order.total_amount)}
                       </td>
-                      <td>
-                        <span className={`badge badge-success`}>
+                      <td data-label="Status">
+                        <span className="badge badge-success">
                           {order.status}
                         </span>
                       </td>

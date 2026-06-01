@@ -443,3 +443,84 @@ body {
     transform: translateX(0);
   }
 }
+
+/* Global Responsive Utilities */
+@media (max-width: 767px) {
+  /* Convert tables to cards */
+  .responsive-table {
+    display: block;
+    width: 100%;
+  }
+  
+  .responsive-table thead {
+    display: none !important; /* Hide standard headers */
+  }
+  
+  .responsive-table tbody,
+  .responsive-table tr {
+    display: block;
+    width: 100%;
+  }
+  
+  .responsive-table tr {
+    background: var(--bg-glass-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-main);
+  }
+  
+  .responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    font-size: 0.9rem;
+    text-align: right;
+    min-height: 44px; /* Touch target-friendly */
+  }
+  
+  .responsive-table td:last-child {
+    border-bottom: none !important;
+    justify-content: flex-end;
+  }
+  
+  /* Use data-label attribute for columns headers */
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    text-align: left;
+    margin-right: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  /* Ensure actions align nicely */
+  .responsive-table td:last-child div {
+    display: inline-flex !important;
+  }
+}
+
+/* Form Helper Utilities */
+.form-row-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 480px) {
+  .form-row-responsive {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn {
+    width: 100%; /* Full-width buttons on small viewports */
+  }
+}
+

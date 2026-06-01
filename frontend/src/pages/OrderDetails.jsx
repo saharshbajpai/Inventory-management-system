@@ -14,9 +14,12 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import './OrderDetails.css';
 
 const OrderDetails = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -84,14 +87,16 @@ const OrderDetails = () => {
           <ArrowLeft size={16} />
           <span>Back to Orders Log</span>
         </button>
-        <button 
-          className="btn btn-danger" 
-          onClick={handleCancelOrder}
-          disabled={deleting}
-        >
-          <Trash2 size={16} />
-          <span>{deleting ? 'Cancelling...' : 'Cancel Order'}</span>
-        </button>
+        {isAdmin && (
+          <button 
+            className="btn btn-danger" 
+            onClick={handleCancelOrder}
+            disabled={deleting}
+          >
+            <Trash2 size={16} />
+            <span>{deleting ? 'Cancelling...' : 'Cancel Order'}</span>
+          </button>
+        )}
       </div>
 
       {/* Main Details block */}
@@ -177,7 +182,7 @@ const OrderDetails = () => {
             </h3>
 
             <div className="table-container">
-              <table className="custom-table compact-table">
+              <table className="custom-table compact-table responsive-table">
                 <thead>
                   <tr>
                     <th>Product Name</th>
@@ -190,15 +195,15 @@ const OrderDetails = () => {
                 <tbody>
                   {order.items?.map((item) => (
                     <tr key={item.id}>
-                      <td>
+                      <td data-label="Product Name">
                         <span className="font-semibold">{item.product?.name || 'Deleted Product'}</span>
                       </td>
-                      <td>
+                      <td data-label="SKU">
                         <code className="sku-code">{item.product?.sku || 'UNKNOWN'}</code>
                       </td>
-                      <td style={{ textAlign: 'right' }}>{formatCurrency(item.unit_price)}</td>
-                      <td style={{ textAlign: 'center' }} className="font-bold">{item.quantity}</td>
-                      <td style={{ textAlign: 'right' }} className="font-bold text-success">
+                      <td data-label="Price" style={{ textAlign: 'right' }}>{formatCurrency(item.unit_price)}</td>
+                      <td data-label="Qty" style={{ textAlign: 'center' }} className="font-bold">{item.quantity}</td>
+                      <td data-label="Subtotal" style={{ textAlign: 'right' }} className="font-bold text-success">
                         {formatCurrency(item.line_total)}
                       </td>
                     </tr>

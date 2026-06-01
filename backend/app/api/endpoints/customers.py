@@ -6,15 +6,25 @@ from uuid import UUID
 from app.core.database import get_db
 from app.models.customer import Customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
+from app.api.dependencies import get_current_user, RoleChecker
+
+admin_required = RoleChecker(["Admin"])
 
 router = APIRouter()
 
 @router.get("", response_model=List[CustomerResponse])
-def get_customers(db: Session = Depends(get_db)):
+def get_customers(
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
     return db.query(Customer).order_by(Customer.full_name).all()
 
 @router.get("/{id}", response_model=CustomerResponse)
-def get_customer(id: UUID, db: Session = Depends(get_db)):
+def get_customer(
+    id: UUID, 
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
     customer = db.query(Customer).filter(Customer.id == id).first()
     if not customer:
         raise HTTPException(
@@ -24,7 +34,11 @@ def get_customer(id: UUID, db: Session = Depends(get_db)):
     return customer
 
 @router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
-def create_customer(customer_in: CustomerCreate, db: Session = Depends(get_db)):
+def create_customer(
+    customer_in: CustomerCreate, 
+    db: Session = Depends(get_db),
+    current_user = Depends(admin_required)
+):
     # Check duplicate email
     existing = db.query(Customer).filter(Customer.email == customer_in.email).first()
     if existing:
@@ -47,7 +61,12 @@ def create_customer(customer_in: CustomerCreate, db: Session = Depends(get_db)):
         )
 
 @router.put("/{id}", response_model=CustomerResponse)
-def update_customer(id: UUID, customer_in: CustomerUpdate, db: Session = Depends(get_db)):
+def update_customer(
+    id: UUID, 
+    customer_in: CustomerUpdate, 
+    db: Session = Depends(get_db),
+    current_user = Depends(admin_required)
+):
     customer = db.query(Customer).filter(Customer.id == id).first()
     if not customer:
         raise HTTPException(
@@ -79,7 +98,11 @@ def update_customer(id: UUID, customer_in: CustomerUpdate, db: Session = Depends
         )
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_customer(id: UUID, db: Session = Depends(get_db)):
+def delete_customer(
+    id: UUID, 
+    db: Session = Depends(get_db),
+    current_user = Depends(admin_required)
+):
     customer = db.query(Customer).filter(Customer.id == id).first()
     if not customer:
         raise HTTPException(

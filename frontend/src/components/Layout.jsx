@@ -7,12 +7,16 @@ import {
   ShoppingCart, 
   Menu, 
   X, 
-  Activity 
+  Activity,
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Layout.css';
 
 const Layout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -51,7 +55,7 @@ const Layout = ({ children }) => {
       <aside className={`app-sidebar ${isSidebarOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-brand">
           <Activity className="logo-icon" size={28} />
-          <h2>Veloce IMS</h2>
+          <h2 className="brand-text">Veloce IMS</h2>
         </div>
         
         <nav className="sidebar-nav">
@@ -70,10 +74,29 @@ const Layout = ({ children }) => {
           ))}
         </nav>
 
+        {user && (
+          <div className="sidebar-user-section">
+            <div className="user-profile-info">
+              <div className="user-avatar-wrapper">
+                <UserIcon size={18} />
+              </div>
+              <div className="user-text-details">
+                <div className="user-name-truncate" title={user.full_name}>{user.full_name}</div>
+                <div className="user-role-badge">{user.role}</div>
+              </div>
+            </div>
+            
+            <button className="btn-logout-sidebar" onClick={logout} title="Sign Out">
+              <LogOut size={18} />
+              <span className="logout-text">Sign Out</span>
+            </button>
+          </div>
+        )}
+
         <div className="sidebar-footer">
           <div className="system-status">
             <div className="status-dot"></div>
-            <span>System Operational</span>
+            <span className="status-text">System Operational</span>
           </div>
         </div>
       </aside>

@@ -45,3 +45,43 @@ def client(db):
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
+from app.core.security import hash_password, create_access_token
+from app.models.user import User
+
+@pytest.fixture(scope="function")
+def admin_user(db):
+    user = User(
+        full_name="Test Admin",
+        email="admin@example.com",
+        password_hash=hash_password("adminpass123"),
+        role="Admin"
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@pytest.fixture(scope="function")
+def employee_user(db):
+    user = User(
+        full_name="Test Employee",
+        email="employee@example.com",
+        password_hash=hash_password("employeepass123"),
+        role="Employee"
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@pytest.fixture(scope="function")
+def admin_headers(admin_user):
+    token = create_access_token(data={"sub": str(admin_user.id)})
+    return {"Authorization": f"Bearer {token}"}
+
+@pytest.fixture(scope="function")
+def employee_headers(employee_user):
+    token = create_access_token(data={"sub": str(employee_user.id)})
+    return {"Authorization": f"Bearer {token}"}
+
