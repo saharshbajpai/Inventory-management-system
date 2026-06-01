@@ -119,10 +119,10 @@ Update these after deployment:
 
 | Deliverable | URL |
 |-------------|-----|
-| GitHub Repository | `https://github.com/YOUR_USERNAME/YOUR_REPO` |
-| Docker Hub (backend image) | `https://hub.docker.com/r/YOUR_DOCKERHUB_USER/inventory-backend` |
-| Live Frontend (Vercel) | `https://YOUR_APP.vercel.app` |
-| Live Backend API (Render) | `https://YOUR_API.onrender.com` |
+| GitHub Repository | `https://github.com/saharshbajpai/Inventory-management-system` |
+| Docker Hub (backend image) | `https://hub.docker.com/r/saharshbajpai/inventory-backend` |
+| Live Frontend (Vercel) | `https://inventory-management-system-vert-mu-55.vercel.app` |
+| Live Backend API (Render) | `https://inventory-backend-cbag.onrender.com` |
 
 ## Project Structure
 
