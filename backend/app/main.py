@@ -25,7 +25,11 @@ origins = [
     for o in settings.CORS_ORIGIN.split(",")
     if o.strip()
 ]
-origins.extend(["http://localhost:3000", "http://127.0.0.1:3000"])
+origins.extend([
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://inventory-management-system-vert-mu-55.vercel.app"
+])
 origins = list(dict.fromkeys(origins))
 
 app.add_middleware(
