@@ -6,7 +6,12 @@ from app.core.database import get_db
 from app.models.order import Order
 from app.schemas.order import OrderCreate, OrderResponse
 from app.services import order_service
-from app.core.exceptions import InsufficientStockException, CustomerNotFoundException, ProductNotFoundException
+from app.core.exceptions import (
+    InsufficientStockException,
+    CustomerNotFoundException,
+    ProductNotFoundException,
+    OrderNotFoundException,
+)
 
 router = APIRouter()
 
@@ -52,6 +57,21 @@ def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
                     "requested_quantity": e.requested_quantity
                 }
             }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_order_endpoint(id: UUID, db: Session = Depends(get_db)):
+    try:
+        order_service.delete_order(db, id)
+    except OrderNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.message
         )
     except Exception as e:
         raise HTTPException(

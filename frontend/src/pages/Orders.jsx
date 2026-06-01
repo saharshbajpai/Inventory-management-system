@@ -195,6 +195,21 @@ const Orders = () => {
     }
   };
 
+  const handleDeleteOrder = async (orderId, e) => {
+    e?.stopPropagation();
+    if (!window.confirm('Are you sure you want to cancel this order? Stock will be restored to inventory.')) {
+      return;
+    }
+    try {
+      await api.delete(`/orders/${orderId}`);
+      showToast('Order cancelled successfully. Stock has been restored.', 'success');
+      fetchData();
+    } catch (error) {
+      const detail = error.detail || 'Failed to cancel order.';
+      showToast(detail, 'error');
+    }
+  };
+
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -466,14 +481,23 @@ const Orders = () => {
                       <span className="badge badge-success">{order.status}</span>
                     </td>
                     <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                      <button 
-                        className="btn btn-secondary btn-xs-icon"
-                        onClick={() => navigate(`/orders/${order.id}`)}
-                        title="View Details"
-                      >
-                        <span>Details</span>
-                        <ChevronRight size={14} />
-                      </button>
+                      <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                        <button 
+                          className="btn btn-secondary btn-xs-icon"
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                          title="View Details"
+                        >
+                          <span>Details</span>
+                          <ChevronRight size={14} />
+                        </button>
+                        <button 
+                          className="btn btn-danger btn-xs-icon"
+                          onClick={(e) => handleDeleteOrder(order.id, e)}
+                          title="Cancel Order"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

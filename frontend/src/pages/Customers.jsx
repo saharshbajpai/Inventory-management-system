@@ -88,6 +88,10 @@ const Customers = () => {
     } else if (!emailRegex.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
+
+    if (!formData.phone.trim()) {
+      errors.phone = 'Phone number is required';
+    }
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -127,7 +131,7 @@ const Customers = () => {
       const payload = {
         full_name: formData.full_name,
         email: formData.email,
-        phone: formData.phone || null,
+        phone: formData.phone.trim(),
         address: formData.address || null
       };
 
@@ -333,16 +337,17 @@ const Customers = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="phone">Phone Number</label>
+            <label className="form-label" htmlFor="phone">Phone Number *</label>
             <input 
               type="text" 
               id="phone"
               name="phone" 
               value={formData.phone}
               onChange={handleInputChange}
-              className="form-input"
+              className={`form-input ${formErrors.phone ? 'input-error' : ''}`}
               placeholder="e.g. +1 (555) 019-2834"
             />
+            {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
           </div>
 
           <div className="form-group">

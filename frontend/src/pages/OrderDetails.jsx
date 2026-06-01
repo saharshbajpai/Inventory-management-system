@@ -9,7 +9,8 @@ import {
   Calendar, 
   FileText, 
   Package, 
-  ShieldCheck 
+  ShieldCheck,
+  Trash2
 } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -21,6 +22,7 @@ const OrderDetails = () => {
   const { showToast } = useToast();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -38,6 +40,23 @@ const OrderDetails = () => {
 
     fetchOrderDetails();
   }, [id, navigate, showToast]);
+
+  const handleCancelOrder = async () => {
+    if (!window.confirm('Are you sure you want to cancel this order? Stock will be restored to inventory.')) {
+      return;
+    }
+    try {
+      setDeleting(true);
+      await api.delete(`/orders/${id}`);
+      showToast('Order cancelled successfully. Stock has been restored.', 'success');
+      navigate('/orders');
+    } catch (error) {
+      const detail = error.detail || 'Failed to cancel order.';
+      showToast(detail, 'error');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-US', {
@@ -60,10 +79,18 @@ const OrderDetails = () => {
   return (
     <div className="page-container">
       {/* Back button */}
-      <div className="page-header">
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <button className="btn btn-secondary btn-xs-icon btn-back" onClick={() => navigate('/orders')}>
           <ArrowLeft size={16} />
           <span>Back to Orders Log</span>
+        </button>
+        <button 
+          className="btn btn-danger" 
+          onClick={handleCancelOrder}
+          disabled={deleting}
+        >
+          <Trash2 size={16} />
+          <span>{deleting ? 'Cancelling...' : 'Cancel Order'}</span>
         </button>
       </div>
 

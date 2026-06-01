@@ -11,10 +11,12 @@ import {
   Plus
 } from 'lucide-react';
 import api from '../services/api';
+import { useToast } from '../context/ToastContext';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -64,6 +66,7 @@ const Dashboard = () => {
         setRecentOrders(orders.slice(0, 5));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        showToast('Failed to load dashboard data. Please try again.', 'error');
       } finally {
         setLoading(false);
       }

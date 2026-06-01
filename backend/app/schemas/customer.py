@@ -6,7 +6,7 @@ from uuid import UUID
 class CustomerBase(BaseModel):
     full_name: str = Field(..., min_length=1, max_length=255)
     email: EmailStr = Field(..., max_length=255)
-    phone: Optional[str] = Field(None, max_length=50)
+    phone: str = Field(..., min_length=1, max_length=50)
     address: Optional[str] = None
 
 class CustomerCreate(CustomerBase):
@@ -15,7 +15,7 @@ class CustomerCreate(CustomerBase):
 class CustomerUpdate(BaseModel):
     full_name: Optional[str] = Field(None, min_length=1, max_length=255)
     email: Optional[EmailStr] = Field(None, max_length=255)
-    phone: Optional[str] = Field(None, max_length=50)
+    phone: Optional[str] = Field(None, min_length=1, max_length=50)
     address: Optional[str] = None
 
 class CustomerResponse(CustomerBase):

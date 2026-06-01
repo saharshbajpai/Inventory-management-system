@@ -5,7 +5,8 @@ def test_create_order_success(client):
     # 1. Create a customer
     cust_res = client.post("/api/customers", json={
         "full_name": "Bob Vance",
-        "email": "bob@vancefrigeration.com"
+        "email": "bob@vancefrigeration.com",
+        "phone": "555-1000",
     })
     cust_id = cust_res.json()["id"]
 
@@ -50,7 +51,7 @@ def test_create_order_success(client):
     assert get_p2["stock_quantity"] == 7 # 10 - 3
 
 def test_create_order_insufficient_stock(client):
-    cust_res = client.post("/api/customers", json={"full_name": "Dwight", "email": "dwight@dundermifflin.com"})
+    cust_res = client.post("/api/customers", json={"full_name": "Dwight", "email": "dwight@dundermifflin.com", "phone": "555-1001"})
     cust_id = cust_res.json()["id"]
 
     prod_res = client.post("/api/products", json={
@@ -84,7 +85,7 @@ def test_create_order_insufficient_stock(client):
 
 def test_create_order_duplicate_product_aggregation(client):
     # Test checking that duplicate entries in items are aggregated for stock verification
-    cust_res = client.post("/api/customers", json={"full_name": "Jim", "email": "jim@dundermifflin.com"})
+    cust_res = client.post("/api/customers", json={"full_name": "Jim", "email": "jim@dundermifflin.com", "phone": "555-1002"})
     cust_id = cust_res.json()["id"]
 
     prod_res = client.post("/api/products", json={
@@ -125,3 +126,62 @@ def test_create_order_customer_not_found(client):
     response = client.post("/api/orders", json=order_payload)
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert "Customer" in response.json()["detail"]
+
+
+def test_delete_order_restores_stock(client):
+    cust_res = client.post("/api/customers", json={
+        "full_name": "Bob Vance",
+        "email": "bob.cancel@example.com",
+        "phone": "555-0100",
+    })
+    cust_id = cust_res.json()["id"]
+
+    prod_res = client.post("/api/products", json={
+        "name": "Widget",
+        "sku": "WDG-001",
+        "price": 10.00,
+        "stock_quantity": 20,
+    })
+    prod_id = prod_res.json()["id"]
+
+    order_res = client.post("/api/orders", json={
+        "customer_id": cust_id,
+        "items": [{"product_id": prod_id, "quantity": 5}],
+    })
+    order_id = order_res.json()["id"]
+
+    assert client.get(f"/api/products/{prod_id}").json()["stock_quantity"] == 15
+
+    delete_res = client.delete(f"/api/orders/{order_id}")
+    assert delete_res.status_code == status.HTTP_204_NO_CONTENT
+
+    assert client.get(f"/api/products/{prod_id}").json()["stock_quantity"] == 20
+    assert client.get(f"/api/orders/{order_id}").status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_delete_order_not_found(client):
+    response = client.delete("/api/orders/00000000-0000-0000-0000-000000000000")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert "Order" in response.json()["detail"]
+
+
+def test_delete_order_twice_returns_404(client):
+    cust_res = client.post("/api/customers", json={
+        "full_name": "Twice Delete",
+        "email": "twice@example.com",
+        "phone": "555-0101",
+    })
+    prod_res = client.post("/api/products", json={
+        "name": "Item",
+        "sku": "ITM-2X",
+        "price": 5.00,
+        "stock_quantity": 10,
+    })
+    order_res = client.post("/api/orders", json={
+        "customer_id": cust_res.json()["id"],
+        "items": [{"product_id": prod_res.json()["id"], "quantity": 1}],
+    })
+    order_id = order_res.json()["id"]
+
+    assert client.delete(f"/api/orders/{order_id}").status_code == status.HTTP_204_NO_CONTENT
+    assert client.delete(f"/api/orders/{order_id}").status_code == status.HTTP_404_NOT_FOUND

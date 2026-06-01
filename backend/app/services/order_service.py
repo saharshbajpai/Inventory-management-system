@@ -4,9 +4,15 @@ from app.models.product import Product
 from app.models.order import Order
 from app.models.order_item import OrderItem
 from app.schemas.order import OrderCreate
-from app.core.exceptions import InsufficientStockException, CustomerNotFoundException, ProductNotFoundException
+from app.core.exceptions import (
+    InsufficientStockException,
+    CustomerNotFoundException,
+    ProductNotFoundException,
+    OrderNotFoundException,
+)
 from decimal import Decimal
 from collections import defaultdict
+from uuid import UUID
 
 def create_order(db: Session, order_data: OrderCreate) -> Order:
     # Begin transaction is automatic in SQLAlchemy with autocommit=False.
@@ -86,6 +92,38 @@ def create_order(db: Session, order_data: OrderCreate) -> Order:
         db.refresh(db_order)
         return db_order
 
+    except Exception as e:
+        db.rollback()
+        raise e
+
+
+def delete_order(db: Session, order_id: UUID) -> None:
+    try:
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise OrderNotFoundException(order_id)
+
+        product_ids = [item.product_id for item in order.items]
+        if not product_ids:
+            db.delete(order)
+            db.commit()
+            return
+
+        locked_products = (
+            db.query(Product)
+            .filter(Product.id.in_(product_ids))
+            .with_for_update()
+            .all()
+        )
+        locked_products_map = {p.id: p for p in locked_products}
+
+        for item in order.items:
+            product = locked_products_map.get(item.product_id)
+            if product:
+                product.stock_quantity += item.quantity
+
+        db.delete(order)
+        db.commit()
     except Exception as e:
         db.rollback()
         raise e
