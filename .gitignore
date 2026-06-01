@@ -1,0 +1,33 @@
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python Cache and Build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.cache/
+dist/
+build/
+*.egg-info/
+
+# Local Environment Variables and Databases
+.env
+*.db
+*.sqlite3
+
+# Editor / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
