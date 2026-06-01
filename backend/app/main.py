@@ -19,12 +19,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Set CORS origins
+# Set CORS origins (comma-separated in CORS_ORIGIN env var)
 origins = [
-    settings.CORS_ORIGIN,
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    o.strip()
+    for o in settings.CORS_ORIGIN.split(",")
+    if o.strip()
 ]
+origins.extend(["http://localhost:3000", "http://127.0.0.1:3000"])
+origins = list(dict.fromkeys(origins))
 
 app.add_middleware(
     CORSMiddleware,

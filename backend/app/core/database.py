@@ -11,6 +11,11 @@ if settings.DATABASE_URL.startswith("sqlite"):
 else:
     engine_args["pool_size"] = 10
     engine_args["max_overflow"] = 20
+    # Render Postgres requires SSL on external URLs
+    if "sslmode" not in settings.DATABASE_URL and (
+        "render.com" in settings.DATABASE_URL or "dpg-" in settings.DATABASE_URL
+    ):
+        connect_args["sslmode"] = "require"
 
 engine = create_engine(
     settings.DATABASE_URL,
